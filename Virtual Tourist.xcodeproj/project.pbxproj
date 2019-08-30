@@ -40,6 +40,7 @@
 		CEE3E1122319545D00998AF1 = {
 			isa = PBXGroup;
 			children = (
+				CEE3E11E2319545D00998AF1 /* AppDelegate.swift */,
 				CEE3E11D2319545D00998AF1 /* Virtual Tourist */,
 				CEE3E11C2319545D00998AF1 /* Products */,
 			);
@@ -56,15 +57,38 @@
 		CEE3E11D2319545D00998AF1 /* Virtual Tourist */ = {
 			isa = PBXGroup;
 			children = (
-				CEE3E11E2319545D00998AF1 /* AppDelegate.swift */,
-				CEE3E1202319545D00998AF1 /* ViewController.swift */,
-				CEE3E1222319545D00998AF1 /* Main.storyboard */,
+				CEE3E1332319551200998AF1 /* Model */,
+				CEE3E1342319555100998AF1 /* View Controllers */,
+				CEE3E1352319556A00998AF1 /* Storyboards */,
 				CEE3E1282319545F00998AF1 /* Assets.xcassets */,
-				CEE3E12A2319545F00998AF1 /* LaunchScreen.storyboard */,
 				CEE3E12D2319545F00998AF1 /* Info.plist */,
-				CEE3E1252319545D00998AF1 /* Virtual_Tourist.xcdatamodeld */,
 			);
 			path = "Virtual Tourist";
+			sourceTree = "<group>";
+		};
+		CEE3E1332319551200998AF1 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				CEE3E1252319545D00998AF1 /* Virtual_Tourist.xcdatamodeld */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		CEE3E1342319555100998AF1 /* View Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				CEE3E1202319545D00998AF1 /* ViewController.swift */,
+			);
+			path = "View Controllers";
+			sourceTree = "<group>";
+		};
+		CEE3E1352319556A00998AF1 /* Storyboards */ = {
+			isa = PBXGroup;
+			children = (
+				CEE3E1222319545D00998AF1 /* Main.storyboard */,
+				CEE3E12A2319545F00998AF1 /* LaunchScreen.storyboard */,
+			);
+			path = Storyboards;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
