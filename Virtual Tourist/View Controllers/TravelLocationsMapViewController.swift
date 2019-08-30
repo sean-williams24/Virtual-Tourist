@@ -14,6 +14,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     @IBOutlet var mapView: MKMapView!
     @IBOutlet var editButton: UIBarButtonItem!
     
+    var dataController: DataController!
     
     override func viewDidLoad() {
         super.viewDidLoad()
