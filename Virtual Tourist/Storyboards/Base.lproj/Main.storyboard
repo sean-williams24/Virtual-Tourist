@@ -13,7 +13,7 @@
         <!--Travel Locations Map View-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController title="Travel Locations Map View" id="BYZ-38-t0r" customClass="ViewController" customModule="Virtual_Tourist" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Travel Locations Map View" id="BYZ-38-t0r" customClass="TravelLocationsMapViewController" customModule="Virtual_Tourist" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -33,10 +33,16 @@
                     </view>
                     <navigationItem key="navigationItem" title="Virtual Tourist" id="XgE-Jh-Xcp">
                         <barButtonItem key="backBarButtonItem" title="OK" id="Wqa-0g-1yV"/>
-                        <barButtonItem key="rightBarButtonItem" systemItem="edit" id="JWw-us-w6T"/>
+                        <barButtonItem key="rightBarButtonItem" systemItem="edit" id="JWw-us-w6T">
+                            <connections>
+                                <action selector="editButtonTapped:" destination="BYZ-38-t0r" id="4lI-VI-RvV"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <segue destination="EEF-Td-QS9" kind="show" id="15b-SF-FzD"/>
+                        <outlet property="editButton" destination="JWw-us-w6T" id="scd-kQ-opL"/>
+                        <outlet property="mapView" destination="JYK-3n-KC4" id="AHk-BY-PRI"/>
+                        <segue destination="EEF-Td-QS9" kind="show" identifier="photoAlbum" id="15b-SF-FzD"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -46,7 +52,7 @@
         <!--Photo Album View-->
         <scene sceneID="niR-gk-fyj">
             <objects>
-                <viewController storyboardIdentifier="Photo Album View" id="EEF-Td-QS9" userLabel="Photo Album View" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Photo Album View" id="EEF-Td-QS9" userLabel="Photo Album View" customClass="PhotoAlbumViewController" customModule="Virtual_Tourist" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Xmu-cv-Xl1">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -67,7 +73,7 @@
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="pjq-Nn-Cqu">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="photoAlbumCell" id="pjq-Nn-Cqu">
                                         <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">
@@ -92,10 +98,19 @@
                     </view>
                     <toolbarItems>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="lgS-Xt-eHd"/>
-                        <barButtonItem title="New Collection" id="m6U-aA-pKB"/>
+                        <barButtonItem title="New Collection" id="m6U-aA-pKB">
+                            <connections>
+                                <action selector="newCollectionButtonTapped:" destination="EEF-Td-QS9" id="WsF-qj-9CC"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="6Co-kw-ZIs"/>
                     </toolbarItems>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
+                    <connections>
+                        <outlet property="collectionView" destination="8qx-Qo-xQQ" id="Ozw-2i-b5u"/>
+                        <outlet property="mapView" destination="Y6J-uc-ZBo" id="NmG-nI-gGO"/>
+                        <outlet property="newCollectionButton" destination="m6U-aA-pKB" id="FCF-09-Fpx"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bh4-3r-GVa" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

@@ -8,22 +8,24 @@
 
 /* Begin PBXBuildFile section */
 		CEE3E11F2319545D00998AF1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3E11E2319545D00998AF1 /* AppDelegate.swift */; };
-		CEE3E1212319545D00998AF1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3E1202319545D00998AF1 /* ViewController.swift */; };
+		CEE3E1212319545D00998AF1 /* TravelLocationsMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3E1202319545D00998AF1 /* TravelLocationsMapViewController.swift */; };
 		CEE3E1242319545D00998AF1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CEE3E1222319545D00998AF1 /* Main.storyboard */; };
 		CEE3E1272319545D00998AF1 /* Virtual_Tourist.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = CEE3E1252319545D00998AF1 /* Virtual_Tourist.xcdatamodeld */; };
 		CEE3E1292319545F00998AF1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CEE3E1282319545F00998AF1 /* Assets.xcassets */; };
 		CEE3E12C2319545F00998AF1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CEE3E12A2319545F00998AF1 /* LaunchScreen.storyboard */; };
+		CEE3E1372319672500998AF1 /* PhotoAlbumViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE3E1362319672500998AF1 /* PhotoAlbumViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		CEE3E11B2319545D00998AF1 /* Virtual Tourist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Virtual Tourist.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEE3E11E2319545D00998AF1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		CEE3E1202319545D00998AF1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		CEE3E1202319545D00998AF1 /* TravelLocationsMapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelLocationsMapViewController.swift; sourceTree = "<group>"; };
 		CEE3E1232319545D00998AF1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		CEE3E1262319545D00998AF1 /* Virtual_Tourist.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Virtual_Tourist.xcdatamodel; sourceTree = "<group>"; };
 		CEE3E1282319545F00998AF1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CEE3E12B2319545F00998AF1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CEE3E12D2319545F00998AF1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CEE3E1362319672500998AF1 /* PhotoAlbumViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAlbumViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,7 +79,8 @@
 		CEE3E1342319555100998AF1 /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				CEE3E1202319545D00998AF1 /* ViewController.swift */,
+				CEE3E1202319545D00998AF1 /* TravelLocationsMapViewController.swift */,
+				CEE3E1362319672500998AF1 /* PhotoAlbumViewController.swift */,
 			);
 			path = "View Controllers";
 			sourceTree = "<group>";
@@ -162,7 +165,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CEE3E1212319545D00998AF1 /* ViewController.swift in Sources */,
+				CEE3E1212319545D00998AF1 /* TravelLocationsMapViewController.swift in Sources */,
+				CEE3E1372319672500998AF1 /* PhotoAlbumViewController.swift in Sources */,
 				CEE3E1272319545D00998AF1 /* Virtual_Tourist.xcdatamodeld in Sources */,
 				CEE3E11F2319545D00998AF1 /* AppDelegate.swift in Sources */,
 			);
