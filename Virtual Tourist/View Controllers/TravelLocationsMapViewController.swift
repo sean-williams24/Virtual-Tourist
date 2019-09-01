@@ -89,6 +89,11 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         performSegue(withIdentifier: "photoAlbum", sender: self)
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Pass data to photo album vc - lat and lon?
+    }
+    
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // code to center user on map pin
 //        let location = locations.last

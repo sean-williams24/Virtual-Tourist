@@ -8,6 +8,7 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 class PhotoAlbumViewController: UIViewController {
 
@@ -15,12 +16,53 @@ class PhotoAlbumViewController: UIViewController {
     @IBOutlet var collectionView: UICollectionView!
     @IBOutlet var newCollectionButton: UIBarButtonItem!
     
+    var dataController: DataController!
+    var latitude = 0.0
+    var longitude = 0.0
+    
+    var images = [UIImage]()
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Do any additional setup after loading the view.
+        FlickrClient.getPhotosForLocation(lat: latitude, lon: longitude) { (response, error) in
+            let photosResponse = response?.photos.photo
+            if let photos = photosResponse {
+                for photos in photos {
+//                    let ID = photos.id
+//                    let serverID = photos.server
+//                    let farmID = photos.farm
+//                    let secret = photos.secret
+                    
+                    let URLString = "https://farm\(photos.farm).staticflickr.com/\(photos.server)/\(photos.id)_\(photos.secret).jpg"
+                    print("URL STRING: \(URLString)")
+                    
+                    guard let imageURL = URL(string: URLString) else {
+                        print("Could not create URL")
+                        return
+                    }
+                    
+                    let task = URLSession.shared.downloadTask(with: imageURL, completionHandler: { (url, response, error) in
+                        guard let url = url else {
+                            print("URL is nil")
+                            return
+                        }
+                        
+                        print("URL: \(url)")
+                        
+                        let imageData = try! Data(contentsOf: url)
+                        let image = UIImage(data: imageData)
+                        if let image = image {
+                            self.images.append(image)
+                            print("images array: \(self.images)")
+                        }
+                    })
+                    task.resume()
+                }
+            }
+        }
+
     }
     
 
