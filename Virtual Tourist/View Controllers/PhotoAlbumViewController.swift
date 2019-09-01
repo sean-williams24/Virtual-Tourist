@@ -36,7 +36,6 @@ class PhotoAlbumViewController: UIViewController {
 //                    let secret = photos.secret
                     
                     let URLString = "https://farm\(photos.farm).staticflickr.com/\(photos.server)/\(photos.id)_\(photos.secret).jpg"
-                    print("URL STRING: \(URLString)")
                     
                     guard let imageURL = URL(string: URLString) else {
                         print("Could not create URL")
@@ -49,13 +48,12 @@ class PhotoAlbumViewController: UIViewController {
                             return
                         }
                         
-                        print("URL: \(url)")
                         
                         let imageData = try! Data(contentsOf: url)
                         let image = UIImage(data: imageData)
                         if let image = image {
                             self.images.append(image)
-                            print("images array: \(self.images)")
+                            print(self.images.count)
                         }
                     })
                     task.resume()
