@@ -16,7 +16,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     @IBOutlet var mapView: MKMapView!
     @IBOutlet var collectionView: UICollectionView!
     @IBOutlet var newCollectionButton: UIBarButtonItem!
-    @IBOutlet var imageView: UIImageView!
+    @IBOutlet var flowLayout: UICollectionViewFlowLayout!
+    
     
     var dataController: DataController!
     var fetchedResultsController: NSFetchedResultsController<Photo>!
@@ -31,7 +32,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         
         let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
         
-//        let predicate = NSPredicate(format: "pin == %@", pin)
+//        let predicate = NSPredicate(format: "%k == %@", pin.latitude, latitude)
 //        fetchRequest.predicate = predicate
         
         let sortDescriptor = NSSortDescriptor(key: "dateAdded", ascending: false)
@@ -51,6 +52,16 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        
+        let space: CGFloat = 3.0
+        let size = (view.frame.size.width - (2 * space)) / 3.0
+        
+        flowLayout.minimumLineSpacing = space
+        flowLayout.minimumInteritemSpacing = space
+        flowLayout.itemSize = CGSize(width: size, height: size)
+        
         
         setupFetchedResultsController()
         
@@ -59,6 +70,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             if let photos = photosResponse {
                 for photos in photos {
                     
+                    // Convert downloaded photo data into url string
                     let URLString = "https://farm\(photos.farm).staticflickr.com/\(photos.server)/\(photos.id)_\(photos.secret).jpg"
                     
                     guard let imageURL = URL(string: URLString) else {
@@ -66,35 +78,31 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                         return
                     }
                     
+                    // Download image from the url
                     let task = URLSession.shared.downloadTask(with: imageURL, completionHandler: { (url, response, error) in
                         guard let url = url else {
                             print("URL is nil")
                             return
                         }
-                        
+                        // Persist image data to Core Data
                         let imageData = try! Data(contentsOf: url)
                         let photo = Photo(context: self.dataController.viewContext)
                         photo.image = imageData
                         photo.dateAdded = Date()
                         try? self.dataController.viewContext.save()
                         
+                        // Convert image data to image and place into images array. Reload collection view with each image download. *** REPLACE THIS WITH FETCHED RESULTS CONTROLLER
                         let image = UIImage(data: imageData)
                         if let image = image {
                             self.images.append(image)
-                            print("PHOTO Album VC: \(self.latitude)")
-                            print(self.images.count)
-                            
-                            
-//                            DispatchQueue.main.async {
-//                                let photo1 = self.images[0]
-//                                self.imageView.image = photo1
-//                                self.collectionView.reloadData()
-//                            }
+                            DispatchQueue.main.async {
+                                self.collectionView.reloadData()
+                            }
+                
                         }
                     })
                     task.resume()
                 }
-//                print(self.fetchedResultsController.sections?[0].numberOfObjects ?? 5)
             }
 
         }
@@ -131,11 +139,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoAlbumCell", for: indexPath) as! PhotoAlbumCollectionViewCell
-        let photo = images[(indexPath as NSIndexPath).row]
-        cell.photoAlbumCellImageView.image = photo
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoAlbumCell", for: indexPath) as! PhotoAlbumCell
+        cell.imageView.image = images[indexPath.row]
 
-        
         return cell
     }
     
@@ -149,3 +155,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     @IBAction func newCollectionButtonTapped(_ sender: Any) {
     }
 }
+
+
+

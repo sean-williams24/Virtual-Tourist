@@ -13,6 +13,8 @@ import CoreData
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    
+    var downloadedPhotos = [UIImage]()
 
     let dataController = DataController(modelName: "VirtualTourist")
     

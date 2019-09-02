@@ -94,6 +94,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
 //        var selectedPin = Pin(context: dataController.viewContext)
         pin = view.annotation as? Pin
         tappedPin = view.annotation
+        
         performSegue(withIdentifier: "photoAlbum", sender: self)
     }
     
