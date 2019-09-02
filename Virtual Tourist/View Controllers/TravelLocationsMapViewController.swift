@@ -18,6 +18,8 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     var dataController: DataController!
     
     var fetchedResultsController: NSFetchedResultsController<Pin>!
+    var tappedPin: MKAnnotation!
+    var pin: Pin!
     
     fileprivate func setupFetchedResultsController() {
         let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
@@ -80,17 +82,31 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
             let pin = Pin(context: dataController.viewContext)
             pin.latitude = coordinate.latitude
             pin.longitude = coordinate.longitude
+            
+            print("TravelVC: \(pin.latitude)")
+            
             pin.creationDate = Date()
             try? dataController.viewContext.save()
         }
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+//        var selectedPin = Pin(context: dataController.viewContext)
+        pin = view.annotation as? Pin
+        tappedPin = view.annotation
         performSegue(withIdentifier: "photoAlbum", sender: self)
     }
     
+   
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Pass data to photo album vc - lat and lon?
+        // Pass data to photo album vc
+        if let vc = segue.destination as? PhotoAlbumViewController {
+            vc.longitude = tappedPin.coordinate.longitude
+            vc.latitude = tappedPin.coordinate.latitude
+            vc.dataController = dataController
+            vc.pin = pin
+        }
     }
     
     

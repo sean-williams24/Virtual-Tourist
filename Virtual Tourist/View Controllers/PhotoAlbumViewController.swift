@@ -19,14 +19,40 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     @IBOutlet var imageView: UIImageView!
     
     var dataController: DataController!
+    var fetchedResultsController: NSFetchedResultsController<Photo>!
+    var pin: Pin!
     var latitude = 0.0
     var longitude = 0.0
     
     var images = [UIImage]()
     
     
+    fileprivate func setupFetchedResultsController() {
+        
+        let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+        
+//        let predicate = NSPredicate(format: "pin == %@", pin)
+//        fetchRequest.predicate = predicate
+        
+        let sortDescriptor = NSSortDescriptor(key: "dateAdded", ascending: false)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        // Instantiate fetched results controller
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: "photos")
+        
+        //        fetchedResultsController.delegate = self
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        }
+    }
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        setupFetchedResultsController()
         
         FlickrClient.getPhotosForLocation(lat: latitude, lon: longitude) { (response, error) in
             let photosResponse = response?.photos.photo
@@ -47,30 +73,55 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                         }
                         
                         let imageData = try! Data(contentsOf: url)
+                        let photo = Photo(context: self.dataController.viewContext)
+                        photo.image = imageData
+                        photo.dateAdded = Date()
+                        try? self.dataController.viewContext.save()
+                        
                         let image = UIImage(data: imageData)
                         if let image = image {
                             self.images.append(image)
+                            print("PHOTO Album VC: \(self.latitude)")
                             print(self.images.count)
                             
-
                             
-                            DispatchQueue.main.async {
-                                let photo1 = self.images[0]
-                                self.imageView.image = photo1
-                                self.collectionView.reloadData()
-                            }
+//                            DispatchQueue.main.async {
+//                                let photo1 = self.images[0]
+//                                self.imageView.image = photo1
+//                                self.collectionView.reloadData()
+//                            }
                         }
                     })
                     task.resume()
                 }
+//                print(self.fetchedResultsController.sections?[0].numberOfObjects ?? 5)
             }
 
         }
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setupFetchedResultsController()
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
+        
+//        let photos = fetchedResultsController.fetchedObjects
+//        if let photos = photos {
+//            let image = UIImage(data: photos[0].image!)
+//            self.imageView.image = image
+//        }
+        
         collectionView.reloadData()
     }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        fetchedResultsController = nil
+    }
+    
+
 
     // MARK: - UICollectionViewDataSource
     
