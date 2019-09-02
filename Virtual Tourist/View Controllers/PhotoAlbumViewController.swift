@@ -10,11 +10,13 @@ import UIKit
 import MapKit
 import CoreData
 
-class PhotoAlbumViewController: UIViewController {
+class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource {
+
 
     @IBOutlet var mapView: MKMapView!
     @IBOutlet var collectionView: UICollectionView!
     @IBOutlet var newCollectionButton: UIBarButtonItem!
+    @IBOutlet var imageView: UIImageView!
     
     var dataController: DataController!
     var latitude = 0.0
@@ -30,10 +32,6 @@ class PhotoAlbumViewController: UIViewController {
             let photosResponse = response?.photos.photo
             if let photos = photosResponse {
                 for photos in photos {
-//                    let ID = photos.id
-//                    let serverID = photos.server
-//                    let farmID = photos.farm
-//                    let secret = photos.secret
                     
                     let URLString = "https://farm\(photos.farm).staticflickr.com/\(photos.server)/\(photos.id)_\(photos.secret).jpg"
                     
@@ -48,31 +46,54 @@ class PhotoAlbumViewController: UIViewController {
                             return
                         }
                         
-                        
                         let imageData = try! Data(contentsOf: url)
                         let image = UIImage(data: imageData)
                         if let image = image {
                             self.images.append(image)
                             print(self.images.count)
+                            
+
+                            
+                            DispatchQueue.main.async {
+                                let photo1 = self.images[0]
+                                self.imageView.image = photo1
+                                self.collectionView.reloadData()
+                            }
                         }
                     })
                     task.resume()
                 }
             }
-        }
 
+        }
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    override func viewDidAppear(_ animated: Bool) {
+        collectionView.reloadData()
     }
-    */
+
+    // MARK: - UICollectionViewDataSource
+    
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return images.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoAlbumCell", for: indexPath) as! PhotoAlbumCollectionViewCell
+        let photo = images[(indexPath as NSIndexPath).row]
+        cell.photoAlbumCellImageView.image = photo
+
+        
+        return cell
+    }
+    
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+    }
+
+    
 
     @IBAction func newCollectionButtonTapped(_ sender: Any) {
     }
