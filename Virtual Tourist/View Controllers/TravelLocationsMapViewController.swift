@@ -19,7 +19,8 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     
     var fetchedResultsController: NSFetchedResultsController<Pin>!
     var tappedPin: MKAnnotation!
-    var pin: Pin!
+    var selectedPin: Pin!
+    
     
     fileprivate func setupFetchedResultsController() {
         let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
@@ -28,8 +29,8 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         
         // Instantiate fetched results controller
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: "pins")
-
-//        fetchedResultsController.delegate = self
+        fetchedResultsController.delegate = self
+        
         do {
             try fetchedResultsController.performFetch()
         } catch {
@@ -83,7 +84,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
             pin.latitude = coordinate.latitude
             pin.longitude = coordinate.longitude
             
-            print("TravelVC: \(pin.latitude)")
             
             pin.creationDate = Date()
             try? dataController.viewContext.save()
@@ -91,9 +91,19 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-//        var selectedPin = Pin(context: dataController.viewContext)
-        pin = view.annotation as? Pin
         tappedPin = view.annotation
+        
+        // If selected pin coordinates pin coordinates of persisted pin, set selectedPin property 
+        let lat = view.annotation?.coordinate.latitude
+        let lon = view.annotation?.coordinate.longitude
+        
+        if let fetchedObjects = fetchedResultsController.fetchedObjects {
+            for pin in fetchedObjects {
+                if pin.latitude == lat && pin.longitude == lon {
+                    self.selectedPin = pin
+                }
+            }
+        }
         
         performSegue(withIdentifier: "photoAlbum", sender: self)
     }
@@ -106,7 +116,8 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
             vc.longitude = tappedPin.coordinate.longitude
             vc.latitude = tappedPin.coordinate.latitude
             vc.dataController = dataController
-            vc.pin = pin
+            vc.pin = selectedPin
+            
         }
     }
     
@@ -120,7 +131,42 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     }
     
     @IBAction func editButtonTapped(_ sender: Any) {
+        if navigationController?.isToolbarHidden == true {
+            navigationController?.isToolbarHidden = false
+        } else {
+            navigationController?.isToolbarHidden = true
+        }
     }
     
 }
 
+extension TravelLocationsMapViewController: NSFetchedResultsControllerDelegate {
+    
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        
+    }
+    
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        guard let pin = anObject as? Pin else {
+            preconditionFailure("All changes observed in the map view controller should be for Point instances")
+        }
+        
+        switch type {
+        case .insert:
+            mapView.addAnnotation(pin)
+            
+        case .delete:
+            mapView.removeAnnotation(pin)
+            
+        case .update:
+            mapView.removeAnnotation(pin)
+            mapView.addAnnotation(pin)
+            
+        case .move:
+            // N.B. The fetched results controller was set up with a single sort descriptor that produced a consistent ordering for its fetched Point instances.
+            fatalError("How did we move a Point? We have a stable sort.")
+        @unknown default:
+            fatalError()
+        }
+    }
+}
