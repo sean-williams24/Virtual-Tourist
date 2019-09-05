@@ -35,14 +35,14 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
 //        let predicateLon = NSPredicate(format: "longitude == %@", lonNumber)
 //        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [predicateLat, predicateLon])
         print("PIN = \(pin)")
-        let predicate = NSPredicate(format: "pin == %@", pin)
-        fetchRequest.predicate = predicate
+//        let predicate = NSPredicate(format: "pin == %@", pin)
+//        fetchRequest.predicate = predicate
 //
         let sortDescriptor = NSSortDescriptor(key: "dateAdded", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
             
         // Instantiate fetched results controller
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: "photos")
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
             
             //        fetchedResultsController.delegate = self
             do {
@@ -138,7 +138,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
 
 
-    // MARK: - UICollectionViewDataSource
+// MARK: - UICollectionViewDataSource
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -166,5 +166,24 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     }
 }
 
+// MARK: Fetched results controller delegate methods
 
+extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
+    
+    
+    // The first two methods tell us when the data the fetched results controller is managing will and did change. This is important to batch update the user interface
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        
+    }
+    
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        
+    }
+    
+
+    
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        
+    }
+}
 
