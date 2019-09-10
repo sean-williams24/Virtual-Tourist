@@ -14,12 +14,14 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
 
     @IBOutlet var mapView: MKMapView!
     @IBOutlet var editButton: UIBarButtonItem!
+    @IBOutlet var deletePinsView: UIView!
     
     var dataController: DataController!
-    
+    var longPressGesture = UILongPressGestureRecognizer()
     var fetchedResultsController: NSFetchedResultsController<Pin>!
     var tappedPin: MKAnnotation!
     var selectedPin: Pin!
+    var deleting = false
     
     
     fileprivate func setupFetchedResultsController() {
@@ -38,11 +40,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         }
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        mapView.delegate = self
-        setupFetchedResultsController()
-        
+    fileprivate func loadAnnotations() {
         if let fetchedObjects = fetchedResultsController.fetchedObjects {
             for pin in fetchedObjects {
                 let lat = pin.latitude
@@ -53,10 +51,20 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
                 mapView.addAnnotation(annotation)
             }
         }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        mapView.delegate = self
+        navigationItem.rightBarButtonItem = editButtonItem
+    
+        setupFetchedResultsController()
+        loadAnnotations()
         
-        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(addAnnotationOnLongPress(gesture:)))
+        longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(addAnnotationOnLongPress(gesture:)))
         longPressGesture.minimumPressDuration = 1
         self.mapView.addGestureRecognizer(longPressGesture)
+
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -98,12 +106,19 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         if let fetchedObjects = fetchedResultsController.fetchedObjects {
             for pin in fetchedObjects {
                 if pin.latitude == lat && pin.longitude == lon {
-                    self.selectedPin = pin
+                    // If editing state is true, tapping pins should removed them
+                    if deleting {
+                        dataController.viewContext.delete(pin)
+                        try? dataController.viewContext.save()
+                        mapView.removeAnnotation(tappedPin)
+                    } else {
+                        self.selectedPin = pin
+                        performSegue(withIdentifier: "photoAlbum", sender: self)
+
+                    }
                 }
             }
         }
-        
-        performSegue(withIdentifier: "photoAlbum", sender: self)
     }
     
    
@@ -121,17 +136,24 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // code to center user on map pin
-//        let location = locations.last
-//        let center = CLLocationCoordinate2D(latitude: location!.coordinate.latitude, longitude: (location?.coordinate.longitude)!)
-//        let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)) //zoom on map
-//        self.mapView.setRegion(region, animated: true)
+        let location = locations.last
+        print("Location change \(location as Any)")
+        let center = CLLocationCoordinate2D(latitude: location!.coordinate.latitude, longitude: (location?.coordinate.longitude)!)
+        let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)) //zoom on map
+        self.mapView.setRegion(region, animated: true)
     }
     
-    @IBAction func editButtonTapped(_ sender: Any) {
-        if navigationController?.isToolbarHidden == true {
-            navigationController?.isToolbarHidden = false
+
+    // Set editing state, show/hide deleting pins view
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        deleting = !deleting
+        if editing {
+            view.frame.origin.y -= deletePinsView.frame.height
+            longPressGesture.isEnabled = false
         } else {
-            navigationController?.isToolbarHidden = true
+            view.frame.origin.y += deletePinsView.frame.height
+            longPressGesture.isEnabled = true
         }
     }
     
@@ -147,13 +169,15 @@ extension TravelLocationsMapViewController: NSFetchedResultsControllerDelegate {
         guard let pin = anObject as? Pin else {
             preconditionFailure("All changes observed in the map view controller should be for Point instances")
         }
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = pin.coordinate
         
         switch type {
         case .insert:
             mapView.addAnnotation(pin)
             
         case .delete:
-            mapView.removeAnnotation(pin)
+            mapView.removeAnnotation(annotation)
             
         case .update:
             mapView.removeAnnotation(pin)

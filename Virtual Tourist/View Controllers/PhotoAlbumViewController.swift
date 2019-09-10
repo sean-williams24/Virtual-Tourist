@@ -29,11 +29,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         
         let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
         
-//        let latNumber = NSNumber.init(value: latitude)
-//        let lonNumber = NSNumber.init(value: longitude)
-//        let predicateLat = NSPredicate(format: "latitude == %@", latNumber)
-//        let predicateLon = NSPredicate(format: "longitude == %@", lonNumber)
-//        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [predicateLat, predicateLon])
         print("PIN = \(String(describing: pin))")
 
         let predicate = NSPredicate(format: "pin == %@", pin)
@@ -50,8 +45,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             } catch {
                 fatalError("The fetch could not be performed: \(error.localizedDescription)")
             }
-  
-   
     }
     
     
@@ -107,6 +100,12 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         flowLayout.itemSize = CGSize(width: size, height: size)
         
         setupFetchedResultsController()
+        
+        let viewRegion = MKCoordinateRegion(center: pin.coordinate, latitudinalMeters: 40000, longitudinalMeters: 40000)
+        self.mapView.setRegion(viewRegion, animated: true)
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = pin.coordinate
+        self.mapView.addAnnotation(annotation)
     }
     
     override func viewWillAppear(_ animated: Bool) {

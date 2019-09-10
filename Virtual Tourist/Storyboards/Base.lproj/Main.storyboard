@@ -21,10 +21,30 @@
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="JYK-3n-KC4">
                                 <rect key="frame" x="0.0" y="88" width="414" height="774"/>
                             </mapView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0Ck-kW-g2A">
+                                <rect key="frame" x="0.0" y="896" width="414" height="69"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="TAP PINS TO DELETE" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fuj-dt-Yry">
+                                        <rect key="frame" x="129.5" y="24" width="155" height="21"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Thin" family="Helvetica Neue" pointSize="17"/>
+                                        <color key="textColor" red="0.99989169836044312" green="1" blue="0.99988096952438354" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" red="0.90109783409999999" green="0.28453022239999998" blue="0.14888954160000001" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <constraints>
+                                    <constraint firstItem="Fuj-dt-Yry" firstAttribute="centerX" secondItem="0Ck-kW-g2A" secondAttribute="centerX" id="4RU-cv-h5O"/>
+                                    <constraint firstAttribute="height" constant="69" id="ryc-kb-Q3b"/>
+                                    <constraint firstItem="Fuj-dt-Yry" firstAttribute="centerY" secondItem="0Ck-kW-g2A" secondAttribute="centerY" id="xgz-gG-Bdf"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="JYK-3n-KC4" secondAttribute="bottom" id="0m1-00-Q4I"/>
+                            <constraint firstAttribute="trailing" secondItem="0Ck-kW-g2A" secondAttribute="trailing" id="OX8-Zd-9Bd"/>
+                            <constraint firstItem="0Ck-kW-g2A" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="S6e-X8-OaZ"/>
+                            <constraint firstItem="0Ck-kW-g2A" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="bottom" id="k6G-0l-hJa"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="JYK-3n-KC4" secondAttribute="trailing" id="lQl-Cm-0rg"/>
                             <constraint firstItem="JYK-3n-KC4" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="r1w-C1-8Vr"/>
                             <constraint firstItem="JYK-3n-KC4" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="vtO-uY-m0T"/>
@@ -40,6 +60,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="deletePinsView" destination="0Ck-kW-g2A" id="ypa-Gf-T85"/>
                         <outlet property="editButton" destination="JWw-us-w6T" id="scd-kQ-opL"/>
                         <outlet property="mapView" destination="JYK-3n-KC4" id="AHk-BY-PRI"/>
                         <segue destination="EEF-Td-QS9" kind="show" identifier="photoAlbum" id="15b-SF-FzD"/>
