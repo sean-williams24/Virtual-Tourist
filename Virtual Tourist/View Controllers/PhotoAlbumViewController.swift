@@ -34,17 +34,17 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
 //        let predicateLat = NSPredicate(format: "latitude == %@", latNumber)
 //        let predicateLon = NSPredicate(format: "longitude == %@", lonNumber)
 //        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [predicateLat, predicateLon])
-        print("PIN = \(pin)")
-//        let predicate = NSPredicate(format: "pin == %@", pin)
-//        fetchRequest.predicate = predicate
-//
+        print("PIN = \(String(describing: pin))")
+
+        let predicate = NSPredicate(format: "pin == %@", pin)
+        fetchRequest.predicate = predicate
+
         let sortDescriptor = NSSortDescriptor(key: "dateAdded", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
             
         // Instantiate fetched results controller
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
-            
-            //        fetchedResultsController.delegate = self
+        fetchedResultsController.delegate = self
             do {
                 try fetchedResultsController.performFetch()
             } catch {
@@ -55,21 +55,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     }
     
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        collectionView.delegate = self
-        collectionView.dataSource = self
-        
-        let space: CGFloat = 3.0
-        let size = (view.frame.size.width - (2 * space)) / 3.0
-        
-        flowLayout.minimumLineSpacing = space
-        flowLayout.minimumInteritemSpacing = space
-        flowLayout.itemSize = CGSize(width: size, height: size)
-        
-        
-        setupFetchedResultsController()
-        
+    fileprivate func downloadPhotosFromFlickr() {
         FlickrClient.getPhotosForLocation(lat: pin.coordinate.latitude, lon: pin.coordinate.longitude) { (response, error) in
             let photosResponse = response?.photos.photo
             if let photos = photosResponse {
@@ -89,45 +75,50 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                             print("URL is nil")
                             return
                         }
+                        
                         // Persist image data to Core Data
                         let imageData = try! Data(contentsOf: url)
                         let photo = Photo(context: self.dataController.viewContext)
                         photo.image = imageData
                         photo.dateAdded = Date()
+                        photo.pin = self.pin
                         try? self.dataController.viewContext.save()
                         DispatchQueue.main.async {
                             self.collectionView.reloadData()
                         }
-                        // Convert image data to image and place into images array. Reload collection view with each image download. *** REPLACE THIS WITH FETCHED RESULTS CONTROLLER
-//                        let image = UIImage(data: imageData)
-//                        if let image = image {
-//                            self.images.append(image)
-//                            DispatchQueue.main.async {
-//                                self.collectionView.reloadData()
-//                            }
-//
-//                        }
                     })
                     task.resume()
                 }
             }
-
+            
         }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        
+        let space: CGFloat = 3.0
+        let size = (view.frame.size.width - (2 * space)) / 3.0
+        
+        flowLayout.minimumLineSpacing = space
+        flowLayout.minimumInteritemSpacing = space
+        flowLayout.itemSize = CGSize(width: size, height: size)
+        
+        setupFetchedResultsController()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupFetchedResultsController()
+        
+        if pin.photos?.count == 0 {
+            downloadPhotosFromFlickr()
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
-//        let photos = fetchedResultsController.fetchedObjects
-//        if let photos = photos {
-//            let image = UIImage(data: photos[0].image!)
-//            self.imageView.image = image
-//        }
-        
         collectionView.reloadData()
     }
     

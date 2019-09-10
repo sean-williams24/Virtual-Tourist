@@ -73,7 +73,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         if gesture.state == .began {
             let point = gesture.location(in: mapView)
             let coordinate = mapView.convert(point, toCoordinateFrom: mapView)
-            print(coordinate)
+            print("New pin dropped \(coordinate)")
             
             let annotation = MKPointAnnotation()
             annotation.coordinate = coordinate
@@ -83,8 +83,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
             let pin = Pin(context: dataController.viewContext)
             pin.latitude = coordinate.latitude
             pin.longitude = coordinate.longitude
-            
-            
             pin.creationDate = Date()
             try? dataController.viewContext.save()
         }
@@ -93,7 +91,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         tappedPin = view.annotation
         
-        // If selected pin coordinates pin coordinates of persisted pin, set selectedPin property 
+        // If selected pin coordinates match pin coordinates of persisted pin, set selectedPin property 
         let lat = view.annotation?.coordinate.latitude
         let lon = view.annotation?.coordinate.longitude
         
@@ -117,7 +115,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
             vc.latitude = tappedPin.coordinate.latitude
             vc.dataController = dataController
             vc.pin = selectedPin
-            
         }
     }
     
