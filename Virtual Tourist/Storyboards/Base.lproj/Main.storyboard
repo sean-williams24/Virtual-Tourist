@@ -52,7 +52,7 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <navigationItem key="navigationItem" title="Virtual Tourist" id="XgE-Jh-Xcp">
-                        <barButtonItem key="backBarButtonItem" title="OK" id="Wqa-0g-1yV"/>
+                        <barButtonItem key="backBarButtonItem" title="Back" id="Wqa-0g-1yV"/>
                         <barButtonItem key="rightBarButtonItem" systemItem="edit" id="JWw-us-w6T">
                             <connections>
                                 <action selector="editButtonTapped:" destination="BYZ-38-t0r" id="4lI-VI-RvV"/>

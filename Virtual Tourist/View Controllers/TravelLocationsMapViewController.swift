@@ -22,6 +22,10 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     var tappedPin: MKAnnotation!
     var selectedPin: Pin!
     var deleting = false
+    let latKey = "lat key"
+    let lonKey = "lon key"
+    let latDeltaKey = "lat delta key"
+    let lonDeltaKey = "lon delta key"
     
     
     fileprivate func setupFetchedResultsController() {
@@ -55,6 +59,24 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Retrieve userDefault value for map region
+        
+        let latDouble = UserDefaults.standard.double(forKey: latKey)
+        let lonDouble = UserDefaults.standard.double(forKey: lonKey)
+        let latDelta = UserDefaults.standard.double(forKey: latDeltaKey)
+        let lonDelta = UserDefaults.standard.double(forKey: lonDeltaKey)
+        
+        let lat = CLLocationDegrees(latDouble)
+        let lon = CLLocationDegrees(lonDouble)
+        let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        
+        
+        let viewRegion = MKCoordinateRegion(center: coordinate, span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lonDelta))
+//        let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 500000, longitudinalMeters: 500000)
+        mapView.setRegion(viewRegion, animated: true)
+
+        
         mapView.delegate = self
         navigationItem.rightBarButtonItem = editButtonItem
     
@@ -72,9 +94,26 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         setupFetchedResultsController()
     }
     
+    
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         fetchedResultsController = nil
+    }
+    
+    
+    
+    func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
+        
+        let lat = mapView.centerCoordinate.latitude
+        let lon = mapView.centerCoordinate.longitude
+        let latDelta = mapView.region.span.latitudeDelta
+        let lonDelta = mapView.region.span.longitudeDelta
+        
+        UserDefaults.standard.set(lat, forKey: latKey)
+        UserDefaults.standard.set(lon, forKey: lonKey)
+        UserDefaults.standard.set(latDelta, forKey: latDeltaKey)
+        UserDefaults.standard.set(lonDelta, forKey: lonDeltaKey)
+        
     }
     
     @objc func addAnnotationOnLongPress(gesture: UILongPressGestureRecognizer) {
@@ -114,7 +153,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
                     } else {
                         self.selectedPin = pin
                         performSegue(withIdentifier: "photoAlbum", sender: self)
-
                     }
                 }
             }
@@ -149,14 +187,17 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         super.setEditing(editing, animated: animated)
         deleting = !deleting
         if editing {
-            view.frame.origin.y -= deletePinsView.frame.height
+            UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveEaseOut, animations: {
+                self.view.frame.origin.y -= self.deletePinsView.frame.height
+            })
             longPressGesture.isEnabled = false
         } else {
-            view.frame.origin.y += deletePinsView.frame.height
+            UIView.animate(withDuration: 1.0) {
+                self.view.frame.origin.y += self.deletePinsView.frame.height
+            }
             longPressGesture.isEnabled = true
         }
     }
-    
 }
 
 extension TravelLocationsMapViewController: NSFetchedResultsControllerDelegate {
