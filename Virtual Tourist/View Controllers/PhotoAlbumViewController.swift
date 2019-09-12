@@ -24,6 +24,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     var pin: Pin!
     var latitude = 0.0
     var longitude = 0.0
+    var blockOperations: [BlockOperation] = []
     
     fileprivate func setupFetchedResultsController() {
         
@@ -83,7 +84,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     task.resume()
                 }
             }
-            
         }
     }
     
@@ -147,14 +147,29 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
+        let photoToDelete = fetchedResultsController.object(at: indexPath)
+        dataController.viewContext.delete(photoToDelete)
+        try? dataController.viewContext.save()
     }
 
     
 
     @IBAction func newCollectionButtonTapped(_ sender: Any) {
+        
+        
+    }
+    
+    
+    deinit {
+        // Cancel all block operations when VC deallocates
+        for operation: BlockOperation in blockOperations {
+            operation.cancel()
+        }
+        
+        blockOperations.removeAll(keepingCapacity: false)
     }
 }
+
 
 // MARK: Fetched results controller delegate methods
 
@@ -162,18 +177,70 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     
     
     // The first two methods tell us when the data the fetched results controller is managing will and did change. This is important to batch update the user interface
+    
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        
+        blockOperations.removeAll(keepingCapacity: false)
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        
+        collectionView!.performBatchUpdates({ () -> Void in
+            for operation: BlockOperation in self.blockOperations {
+                operation.start()
+            }
+        }, completion: { (finished) -> Void in
+            self.blockOperations.removeAll(keepingCapacity: false)
+        })
     }
     
 
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         
+        if type == NSFetchedResultsChangeType.insert {
+            print("Insert Object: \(newIndexPath)")
+            
+            blockOperations.append(
+                BlockOperation(block: { [weak self] in
+                    if let this = self {
+                        this.collectionView!.insertItems(at: [newIndexPath!])
+                    }
+                })
+            )
+        }
+        else if type == NSFetchedResultsChangeType.update {
+            print("Update Object: \(indexPath)")
+            
+            blockOperations.append(
+                BlockOperation(block: { [weak self] in
+                    if let this = self {
+                        this.collectionView!.reloadItems(at: [indexPath!])
+                    }
+                })
+            )
+        }
+        else if type == NSFetchedResultsChangeType.move {
+            print("Move Object: \(indexPath)")
+            
+            blockOperations.append(
+                BlockOperation(block: { [weak self] in
+                    if let this = self {
+                        this.collectionView!.moveItem(at: indexPath!, to: newIndexPath!)
+                    }
+                })
+            )
+        }
+        else if type == NSFetchedResultsChangeType.delete {
+            print("Delete Object: \(indexPath)")
+            
+            blockOperations.append(
+                BlockOperation(block: { [weak self] in
+                    if let this = self {
+                        this.collectionView!.deleteItems(at: [indexPath!])
+                    }
+                })
+            )
+        }
     }
+
 }
 

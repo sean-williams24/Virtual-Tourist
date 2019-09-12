@@ -60,7 +60,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Retrieve userDefault value for map region
+        // Retrieve userDefault value for map region and zoom level and return view to previous state
         
         let latDouble = UserDefaults.standard.double(forKey: latKey)
         let lonDouble = UserDefaults.standard.double(forKey: lonKey)
@@ -71,9 +71,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         let lon = CLLocationDegrees(lonDouble)
         let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
         
-        
         let viewRegion = MKCoordinateRegion(center: coordinate, span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lonDelta))
-//        let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 500000, longitudinalMeters: 500000)
         mapView.setRegion(viewRegion, animated: true)
 
         
@@ -94,16 +92,15 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         setupFetchedResultsController()
     }
     
-    
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         fetchedResultsController = nil
     }
     
     
+    // Persist map view region and zoom level in user defaults
     
     func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
-        
         let lat = mapView.centerCoordinate.latitude
         let lon = mapView.centerCoordinate.longitude
         let latDelta = mapView.region.span.latitudeDelta
@@ -113,7 +110,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         UserDefaults.standard.set(lon, forKey: lonKey)
         UserDefaults.standard.set(latDelta, forKey: latDeltaKey)
         UserDefaults.standard.set(lonDelta, forKey: lonDeltaKey)
-        
     }
     
     @objc func addAnnotationOnLongPress(gesture: UILongPressGestureRecognizer) {
@@ -138,7 +134,8 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         tappedPin = view.annotation
         
-        // If selected pin coordinates match pin coordinates of persisted pin, set selectedPin property 
+        // If selected pin coordinates match pin coordinates of persisted pin, set selectedPin property
+        
         let lat = view.annotation?.coordinate.latitude
         let lon = view.annotation?.coordinate.longitude
         
@@ -159,8 +156,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         }
     }
     
-   
-    
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Pass data to photo album vc
         if let vc = segue.destination as? PhotoAlbumViewController {
@@ -183,6 +179,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     
 
     // Set editing state, show/hide deleting pins view
+    
     override func setEditing(_ editing: Bool, animated: Bool) {
         super.setEditing(editing, animated: animated)
         deleting = !deleting
@@ -203,6 +200,10 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
 extension TravelLocationsMapViewController: NSFetchedResultsControllerDelegate {
     
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        
+    }
+    
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         
     }
     
