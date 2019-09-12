@@ -77,9 +77,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                         photo.dateAdded = Date()
                         photo.pin = self.pin
                         try? self.dataController.viewContext.save()
-                        DispatchQueue.main.async {
-                            self.collectionView.reloadData()
-                        }
                     })
                     task.resume()
                 }
@@ -98,6 +95,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         flowLayout.minimumLineSpacing = space
         flowLayout.minimumInteritemSpacing = space
         flowLayout.itemSize = CGSize(width: size, height: size)
+        
+        navigationController?.isToolbarHidden = false
         
         setupFetchedResultsController()
         
@@ -153,10 +152,28 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     }
 
     
-
+//////////////////////////// DELETE POTENTIALLY ////////////////////////////////
+    fileprivate func batchDeletePhotos() {
+        let fetch = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetch)
+        
+        do {
+            try dataController.viewContext.execute(deleteRequest)
+            try dataController.viewContext.save()
+            
+        } catch {
+            print ("There was an error")
+        }
+    }
+    
     @IBAction func newCollectionButtonTapped(_ sender: Any) {
-        
-        
+        let photos = fetchedResultsController.fetchedObjects
+        if let photos = photos {
+            for photo in photos {
+                dataController.viewContext.delete(photo)
+            }
+        }
+        downloadPhotosFromFlickr()
     }
     
     

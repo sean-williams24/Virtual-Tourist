@@ -144,7 +144,7 @@
                         </barButtonItem>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="6Co-kw-ZIs"/>
                     </toolbarItems>
-                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics" barStyle="black"/>
                     <connections>
                         <outlet property="collectionView" destination="8qx-Qo-xQQ" id="Ozw-2i-b5u"/>
                         <outlet property="flowLayout" destination="8CN-78-PQM" id="rtP-sd-TqA"/>
