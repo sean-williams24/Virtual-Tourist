@@ -101,18 +101,24 @@
                                             <rect key="frame" x="0.0" y="0.0" width="135" height="135"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="yk8-FK-Kfu">
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Placeholder" translatesAutoresizingMaskIntoConstraints="NO" id="yk8-FK-Kfu">
                                                     <rect key="frame" x="0.0" y="0.0" width="135" height="135"/>
                                                 </imageView>
+                                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="Y9j-ln-CGm">
+                                                    <rect key="frame" x="49" y="49" width="37" height="37"/>
+                                                </activityIndicatorView>
                                             </subviews>
                                         </view>
                                         <constraints>
                                             <constraint firstItem="yk8-FK-Kfu" firstAttribute="top" secondItem="pjq-Nn-Cqu" secondAttribute="top" id="8q9-mp-UKh"/>
                                             <constraint firstAttribute="bottom" secondItem="yk8-FK-Kfu" secondAttribute="bottom" id="Imd-Bf-cTP"/>
+                                            <constraint firstItem="Y9j-ln-CGm" firstAttribute="centerX" secondItem="pjq-Nn-Cqu" secondAttribute="centerX" id="Phj-OJ-QVt"/>
+                                            <constraint firstItem="Y9j-ln-CGm" firstAttribute="centerY" secondItem="pjq-Nn-Cqu" secondAttribute="centerY" id="WGO-G5-f1Z"/>
                                             <constraint firstAttribute="trailing" secondItem="yk8-FK-Kfu" secondAttribute="trailing" id="ctZ-gz-fU8"/>
                                             <constraint firstItem="yk8-FK-Kfu" firstAttribute="leading" secondItem="pjq-Nn-Cqu" secondAttribute="leading" id="kRs-bW-bMz"/>
                                         </constraints>
                                         <connections>
+                                            <outlet property="activityView" destination="Y9j-ln-CGm" id="KFY-cH-WfL"/>
                                             <outlet property="imageView" destination="yk8-FK-Kfu" id="zvn-TG-lDT"/>
                                         </connections>
                                     </collectionViewCell>
@@ -175,4 +181,7 @@
             <point key="canvasLocation" x="277" y="139"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="Placeholder" width="280" height="180"/>
+    </resources>
 </document>

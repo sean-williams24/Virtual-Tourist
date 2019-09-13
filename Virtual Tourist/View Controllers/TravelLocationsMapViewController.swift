@@ -103,8 +103,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         let lon = mapView.centerCoordinate.longitude
         let latDelta = mapView.region.span.latitudeDelta
         let lonDelta = mapView.region.span.longitudeDelta
-        print(latDelta)
-        print(lonDelta)
         
         UserDefaults.standard.set(lat, forKey: latKey)
         UserDefaults.standard.set(lon, forKey: lonKey)

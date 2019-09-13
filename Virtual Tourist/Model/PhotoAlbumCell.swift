@@ -11,4 +11,5 @@ import UIKit
 class PhotoAlbumCell: UICollectionViewCell {
     
     @IBOutlet var imageView: UIImageView!
+    @IBOutlet var activityView: UIActivityIndicatorView!
 }

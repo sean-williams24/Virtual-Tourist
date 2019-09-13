@@ -19,7 +19,6 @@ class FlickrClient {
     
     class func getPhotosForLocation(lat: Double, lon: Double, completion: @escaping (FlickrResponse?, Error?) -> Void) {
         let urlString = "https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(Auth.APIKey)&accuracy=11&lat=\(lat)&lon=\(lon)&per_page=21&page=\(Int.random(in: 1...Auth.flickrPages))&format=json&nojsoncallback=1)"
-        print(urlString)
         let request = URLRequest(url: URL(string: urlString)!)
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
             guard let data = data else {
@@ -31,7 +30,9 @@ class FlickrClient {
             do {
                 let response = try decoder.decode(FlickrResponse.self, from: data)
                 Auth.flickrPages = response.photos.pages
-                completion(response, error)
+                DispatchQueue.main.async {
+                    completion(response, error)
+                }
                 
             } catch {
                 completion(nil, error)

@@ -22,6 +22,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     var dataController: DataController!
     var fetchedResultsController: NSFetchedResultsController<Photo>!
     var pin: Pin!
+    var photosArray: [Photo] = []
     var latitude = 0.0
     var longitude = 0.0
     var blockOperations: [BlockOperation] = []
@@ -29,9 +30,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     fileprivate func setupFetchedResultsController() {
         
         let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
-        
-        print("PIN = \(String(describing: pin))")
-
         let predicate = NSPredicate(format: "pin == %@", pin)
         fetchRequest.predicate = predicate
 
@@ -52,6 +50,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     fileprivate func downloadPhotosFromFlickr() {
         FlickrClient.getPhotosForLocation(lat: pin.coordinate.latitude, lon: pin.coordinate.longitude) { (response, error) in
             let photosResponse = response?.photos.photo
+            
             if let photos = photosResponse {
                 for photos in photos {
                     
@@ -64,21 +63,30 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     }
                     
                     // Download image from the url
-                    let task = URLSession.shared.downloadTask(with: imageURL, completionHandler: { (url, response, error) in
-                        guard let url = url else {
-                            print("URL is nil")
-                            return
-                        }
-                        
-                        // Persist image data to Core Data
-                        let imageData = try! Data(contentsOf: url)
-                        let photo = Photo(context: self.dataController.viewContext)
-                        photo.image = imageData
-                        photo.dateAdded = Date()
-                        photo.pin = self.pin
-                        try? self.dataController.viewContext.save()
-                    })
-                    task.resume()
+                    DispatchQueue.global(qos: .background).async {
+                        let task = URLSession.shared.downloadTask(with: imageURL, completionHandler: { (url, response, error) in
+                            guard let url = url else {
+                                print("URL is nil")
+                                return
+                            }
+                            
+                            // Persist image data to Core Data
+                            let imageData = try! Data(contentsOf: url)
+                            let photo = Photo(context: self.dataController.viewContext)
+                            self.photosArray.append(photo)
+                            
+                            photo.image = imageData
+                            photo.dateAdded = Date()
+                            photo.pin = self.pin
+                            
+                            DispatchQueue.main.async {
+                                try? self.dataController.viewContext.save()
+                                self.collectionView.reloadData()
+                            }
+                            print("photos array count: \(self.photosArray.count)")
+                        })
+                        task.resume()
+                    }
                 }
             }
         }
@@ -105,15 +113,19 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         let annotation = MKPointAnnotation()
         annotation.coordinate = pin.coordinate
         self.mapView.addAnnotation(annotation)
+        
+  
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        setupFetchedResultsController()
         
+        
+        setupFetchedResultsController()
         if pin.photos?.count == 0 {
             downloadPhotosFromFlickr()
         }
+
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -131,15 +143,28 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return fetchedResultsController.sections?[section].numberOfObjects ?? 0
+        return fetchedResultsController.sections?[section].numberOfObjects ?? 21
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let aPhoto = fetchedResultsController.object(at: indexPath)
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoAlbumCell", for: indexPath) as! PhotoAlbumCell
+        self.newCollectionButton.isEnabled = false
+        cell.imageView.image = UIImage(named: "Placeholder")
+        cell.activityView.startAnimating()
+ 
+        let aPhoto = fetchedResultsController.object(at: indexPath)
+        
         if let aPhoto = aPhoto.image {
             let image = UIImage(data: aPhoto)
-            cell.imageView.image = image
+            DispatchQueue.main.async {
+                cell.imageView.image = image
+                cell.activityView.stopAnimating()
+                self.newCollectionButton.isEnabled = true
+            }
+        } else {
+            self.newCollectionButton.isEnabled = false
+            cell.imageView.image = UIImage(named: "Placeholder")
+            cell.activityView.startAnimating()
         }
         return cell
     }
@@ -171,6 +196,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         if let photos = photos {
             for photo in photos {
                 dataController.viewContext.delete(photo)
+                photosArray.removeAll()
             }
         }
         downloadPhotosFromFlickr()
@@ -214,7 +240,7 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         
         if type == NSFetchedResultsChangeType.insert {
-            print("Insert Object: \(newIndexPath)")
+//            print("Insert Object: \(newIndexPath)")
             
             blockOperations.append(
                 BlockOperation(block: { [weak self] in
@@ -225,7 +251,7 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
             )
         }
         else if type == NSFetchedResultsChangeType.update {
-            print("Update Object: \(indexPath)")
+//            print("Update Object: \(indexPath)")
             
             blockOperations.append(
                 BlockOperation(block: { [weak self] in
@@ -236,7 +262,7 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
             )
         }
         else if type == NSFetchedResultsChangeType.move {
-            print("Move Object: \(indexPath)")
+//            print("Move Object: \(indexPath)")
             
             blockOperations.append(
                 BlockOperation(block: { [weak self] in
@@ -247,7 +273,7 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
             )
         }
         else if type == NSFetchedResultsChangeType.delete {
-            print("Delete Object: \(indexPath)")
+//            print("Delete Object: \(indexPath)")
             
             blockOperations.append(
                 BlockOperation(block: { [weak self] in
