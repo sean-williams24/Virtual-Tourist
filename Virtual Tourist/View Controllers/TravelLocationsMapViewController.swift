@@ -74,7 +74,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         let viewRegion = MKCoordinateRegion(center: coordinate, span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lonDelta))
         mapView.setRegion(viewRegion, animated: true)
 
-        
         mapView.delegate = self
         navigationItem.rightBarButtonItem = editButtonItem
     
@@ -84,7 +83,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(addAnnotationOnLongPress(gesture:)))
         longPressGesture.minimumPressDuration = 1
         self.mapView.addGestureRecognizer(longPressGesture)
-
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -105,6 +103,8 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         let lon = mapView.centerCoordinate.longitude
         let latDelta = mapView.region.span.latitudeDelta
         let lonDelta = mapView.region.span.longitudeDelta
+        print(latDelta)
+        print(lonDelta)
         
         UserDefaults.standard.set(lat, forKey: latKey)
         UserDefaults.standard.set(lon, forKey: lonKey)

@@ -13,15 +13,14 @@ class FlickrClient {
     
     struct Auth {
         static var APIKey = "6fc73c69adc5c8d33679b0b1d91fcd55"
-        static var flickrPages = 600
+        static var flickrPages = 1
     }
     
-//    enum Endpoints {
-//        static let base = "https://api.flickr.com/services"
-//    }
     
     class func getPhotosForLocation(lat: Double, lon: Double, completion: @escaping (FlickrResponse?, Error?) -> Void) {
-        let request = URLRequest(url: URL(string: "https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(Auth.APIKey)&accuracy=11&lat=\(lat)&lon=\(lon)&per_page=21&page=\(Int.random(in: 1...600))&format=json&nojsoncallback=1)")!)
+        let urlString = "https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(Auth.APIKey)&accuracy=11&lat=\(lat)&lon=\(lon)&per_page=21&page=\(Int.random(in: 1...Auth.flickrPages))&format=json&nojsoncallback=1)"
+        print(urlString)
+        let request = URLRequest(url: URL(string: urlString)!)
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
             guard let data = data else {
                 completion(nil, error)
@@ -41,8 +40,6 @@ class FlickrClient {
         }
         task.resume()
     }
-    
-    
     
     
 //    class func getStudentLocations(completion: @escaping ([StudentLocation], Error?) -> Void) {

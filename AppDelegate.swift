@@ -68,8 +68,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } else {
             print("This is the first launch")
             UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
-//            UserDefaults.standard.set(0, forKey: "lat key")
-//            UserDefaults.standard.set(0, forKey: "lon key")
+            UserDefaults.standard.set(51.50528421798009, forKey: "lat key")
+            UserDefaults.standard.set(-0.18821414496005673, forKey: "lon key")
+            UserDefaults.standard.set(5.197731883914713, forKey: "lat delta key")
+            UserDefaults.standard.set(4.548340505366269, forKey: "lon delta key")
         }
     }
 }
