@@ -22,10 +22,10 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     var dataController: DataController!
     var fetchedResultsController: NSFetchedResultsController<Photo>!
     var pin: Pin!
-    var photosArray: [Photo] = []
     var latitude = 0.0
     var longitude = 0.0
     var blockOperations: [BlockOperation] = []
+    var FlickrURLs: [String] = []
     
     fileprivate func setupFetchedResultsController() {
         
@@ -44,52 +44,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             } catch {
                 fatalError("The fetch could not be performed: \(error.localizedDescription)")
             }
-    }
-    
-    
-    fileprivate func downloadPhotosFromFlickr() {
-        FlickrClient.getPhotosForLocation(lat: pin.coordinate.latitude, lon: pin.coordinate.longitude) { (response, error) in
-            let photosResponse = response?.photos.photo
-            
-            if let photos = photosResponse {
-                for photos in photos {
-                    
-                    // Convert downloaded photo data into url string
-                    let URLString = "https://farm\(photos.farm).staticflickr.com/\(photos.server)/\(photos.id)_\(photos.secret).jpg"
-                    
-                    guard let imageURL = URL(string: URLString) else {
-                        print("Could not create URL")
-                        return
-                    }
-                    
-                    // Download image from the url
-                    DispatchQueue.global(qos: .background).async {
-                        let task = URLSession.shared.downloadTask(with: imageURL, completionHandler: { (url, response, error) in
-                            guard let url = url else {
-                                print("URL is nil")
-                                return
-                            }
-                            
-                            // Persist image data to Core Data
-                            let imageData = try! Data(contentsOf: url)
-                            let photo = Photo(context: self.dataController.viewContext)
-                            self.photosArray.append(photo)
-                            
-                            photo.image = imageData
-                            photo.dateAdded = Date()
-                            photo.pin = self.pin
-                            
-                            DispatchQueue.main.async {
-                                try? self.dataController.viewContext.save()
-                                self.collectionView.reloadData()
-                            }
-                            print("photos array count: \(self.photosArray.count)")
-                        })
-                        task.resume()
-                    }
-                }
-            }
-        }
     }
     
     override func viewDidLoad() {
@@ -119,9 +73,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        
         setupFetchedResultsController()
+        FlickrURLs = []
+        print(pin.photos?.count)
         if pin.photos?.count == 0 {
             downloadPhotosFromFlickr()
         }
@@ -129,42 +83,92 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        collectionView.reloadData()
+//        collectionView.reloadData()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         fetchedResultsController = nil
+        print(pin.photos?.count)
+
     }
     
-
+    
+    fileprivate func downloadPhotosFromFlickr() {
+        FlickrClient.getPhotosForLocation(lat: pin.coordinate.latitude, lon: pin.coordinate.longitude) { (response, error) in
+            let photosResponse = response?.photos.photo
+            
+            self.FlickrURLs = []
+            if let photos = photosResponse {
+                for photos in photos {
+                    
+                    // Convert downloaded photo data into url string
+                    let URLString = "https://farm\(photos.farm).staticflickr.com/\(photos.server)/\(photos.id)_\(photos.secret).jpg"
+                    self.FlickrURLs.append(URLString)
+                    print(self.FlickrURLs.count)
+                }
+                self.collectionView.reloadData()
+            }
+        }
+    }
 
 // MARK: - UICollectionViewDataSource
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return fetchedResultsController.sections?[section].numberOfObjects ?? 21
+        if pin.photos?.count == 0 {
+            return FlickrURLs.count
+        } else {
+            return fetchedResultsController.sections?[section].numberOfObjects ?? 21
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoAlbumCell", for: indexPath) as! PhotoAlbumCell
-        self.newCollectionButton.isEnabled = false
-        cell.imageView.image = UIImage(named: "Placeholder")
-        cell.activityView.startAnimating()
- 
-        let aPhoto = fetchedResultsController.object(at: indexPath)
-        
-        if let aPhoto = aPhoto.image {
-            let image = UIImage(data: aPhoto)
-            DispatchQueue.main.async {
-                cell.imageView.image = image
-                cell.activityView.stopAnimating()
-                self.newCollectionButton.isEnabled = true
-            }
-        } else {
+
+        if pin.photos?.count == 0 {
             self.newCollectionButton.isEnabled = false
             cell.imageView.image = UIImage(named: "Placeholder")
             cell.activityView.startAnimating()
+            
+            // Download image from the url
+            DispatchQueue.global(qos: .background).async {
+                let URLString = self.FlickrURLs[indexPath.row]
+                print(URLString)
+                let imageURL = URL(string: URLString)
+                let task = URLSession.shared.downloadTask(with: imageURL!, completionHandler: { (url, response, error) in
+                    guard let url = url else {
+                        print("URL is nil")
+                        return
+                    }
+                    
+                    // Persist image data to Core Data
+                    let imageData = try! Data(contentsOf: url)
+                    
+                    let photo = Photo(context: self.dataController.viewContext)
+                    photo.image = imageData
+                    photo.dateAdded = Date()
+                    photo.pin = self.pin
+                    try? self.dataController.viewContext.save()
+
+                    DispatchQueue.main.async {
+                        let image = UIImage(data: imageData)
+                        cell.imageView.image = image
+                        cell.activityView.stopAnimating()
+                        self.newCollectionButton.isEnabled = true
+                    }
+                })
+                task.resume()
+            }
+        } else {
+            let aPhoto = fetchedResultsController.object(at: indexPath)
+
+            if let aPhoto = aPhoto.image {
+                let image = UIImage(data: aPhoto)
+                DispatchQueue.main.async {
+                    cell.imageView.image = image
+                }
+            }
         }
         return cell
     }
@@ -177,29 +181,18 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     }
 
     
-//////////////////////////// DELETE POTENTIALLY ////////////////////////////////
-//    fileprivate func batchDeletePhotos() {
-//        let fetch = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
-//        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetch)
-//
-//        do {
-//            try dataController.viewContext.execute(deleteRequest)
-//            try dataController.viewContext.save()
-//
-//        } catch {
-//            print ("There was an error")
-//        }
-//    }
-    
     @IBAction func newCollectionButtonTapped(_ sender: Any) {
         let photos = fetchedResultsController.fetchedObjects
         if let photos = photos {
             for photo in photos {
                 dataController.viewContext.delete(photo)
-                photosArray.removeAll()
             }
         }
+        fetchedResultsController = nil
+        setupFetchedResultsController()
+        
         downloadPhotosFromFlickr()
+//        self.collectionView.reloadData()
     }
     
     

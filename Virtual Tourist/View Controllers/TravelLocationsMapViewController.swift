@@ -93,6 +93,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         fetchedResultsController = nil
+        
     }
     
     
@@ -197,31 +198,31 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
 
 extension TravelLocationsMapViewController: NSFetchedResultsControllerDelegate {
     
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        
-    }
-    
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        
-    }
+//    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+//        
+//    }
+//    
+//    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+//        
+//    }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         guard let pin = anObject as? Pin else {
-            preconditionFailure("All changes observed in the map view controller should be for Point instances")
+            preconditionFailure("All changes observed in the map view controller should be for Pin instances")
         }
         let annotation = MKPointAnnotation()
         annotation.coordinate = pin.coordinate
         
         switch type {
         case .insert:
-            mapView.addAnnotation(pin)
+            mapView.addAnnotation(annotation)
             
         case .delete:
             mapView.removeAnnotation(annotation)
             
         case .update:
-            mapView.removeAnnotation(pin)
-            mapView.addAnnotation(pin)
+            mapView.removeAnnotation(annotation)
+            mapView.addAnnotation(annotation)
             
         case .move:
             // N.B. The fetched results controller was set up with a single sort descriptor that produced a consistent ordering for its fetched Point instances.
