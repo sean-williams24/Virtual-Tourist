@@ -26,6 +26,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     var longitude = 0.0
     var blockOperations: [BlockOperation] = []
     var FlickrURLs: [String] = []
+    var photosToDisplay: Bool!
     
     fileprivate func setupFetchedResultsController() {
         
@@ -99,7 +100,11 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             let photosResponse = response?.photos.photo
             
             self.FlickrURLs = []
+            
             if let photos = photosResponse {
+                if photos.count == 0 {
+                    self.photosToDisplay = false
+                }
                 for photos in photos {
                     
                     // Convert downloaded photo data into url string
@@ -117,6 +122,20 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if pin.photos?.count == 0 {
+            if FlickrURLs.count == 0 {
+                // If there are no photos at location then display message on collection view background
+                let messageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.collectionView.frame.width, height: self.collectionView.frame.height))
+                messageLabel.text = "NO PHOTOS FOUND AT THIS LOCATION"
+                messageLabel.textColor = .black
+                messageLabel.numberOfLines = 0;
+                messageLabel.textAlignment = .center;
+                messageLabel.font = UIFont(name: "TrebuchetMS", size: 15)
+                messageLabel.sizeToFit()
+                
+                self.collectionView.backgroundView = messageLabel;
+            } else {
+                self.collectionView.backgroundView = nil
+            }
             return FlickrURLs.count
         } else {
             return fetchedResultsController.sections?[section].numberOfObjects ?? 21
@@ -127,6 +146,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoAlbumCell", for: indexPath) as! PhotoAlbumCell
 
         if pin.photos?.count == 0 {
+            // if there are no photos associated with this pin, download new images from FlickrURLS array
+            print("Flickr URL array count: \(self.FlickrURLs.count)")
+
             self.newCollectionButton.isEnabled = false
             cell.imageView.image = UIImage(named: "Placeholder")
             cell.activityView.startAnimating()
@@ -135,6 +157,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             DispatchQueue.global(qos: .background).async {
                 let URLString = self.FlickrURLs[indexPath.row]
                 print(URLString)
+                
                 let imageURL = URL(string: URLString)
                 let task = URLSession.shared.downloadTask(with: imageURL!, completionHandler: { (url, response, error) in
                     guard let url = url else {
@@ -160,7 +183,10 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                 })
                 task.resume()
             }
-        } else {
+
+        } else if pin.photos!.count > 0 {
+            // If there are photos on the pin, show previously downloaded photos
+            
             let aPhoto = fetchedResultsController.object(at: indexPath)
 
             if let aPhoto = aPhoto.image {
@@ -169,6 +195,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     cell.imageView.image = image
                 }
             }
+        } else {
+            // Display no images label
+//            print("There are no photos to display")
         }
         return cell
     }
@@ -188,8 +217,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                 dataController.viewContext.delete(photo)
             }
         }
-        fetchedResultsController = nil
-        setupFetchedResultsController()
+//        fetchedResultsController = nil
+//        setupFetchedResultsController()
         
         downloadPhotosFromFlickr()
 //        self.collectionView.reloadData()
