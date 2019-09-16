@@ -49,6 +49,11 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        if pin.photos?.count == 0 {
+            downloadPhotosFromFlickr()
+        }
+        
         collectionView.delegate = self
         collectionView.dataSource = self
         
@@ -69,17 +74,13 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         annotation.coordinate = pin.coordinate
         self.mapView.addAnnotation(annotation)
         
-  
+        print("view did load flickr urls count: \(FlickrURLs.count)")
+
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupFetchedResultsController()
-        FlickrURLs = []
-        print(pin.photos?.count)
-        if pin.photos?.count == 0 {
-            downloadPhotosFromFlickr()
-        }
 
     }
     
@@ -90,8 +91,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         fetchedResultsController = nil
-        print(pin.photos?.count)
-
     }
     
     
@@ -110,19 +109,11 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     // Convert downloaded photo data into url string
                     let URLString = "https://farm\(photos.farm).staticflickr.com/\(photos.server)/\(photos.id)_\(photos.secret).jpg"
                     self.FlickrURLs.append(URLString)
-                    print(self.FlickrURLs.count)
                 }
-                self.collectionView.reloadData()
+                print("Download photos from flickr URLS count: \(self.FlickrURLs.count)")
             }
-        }
-    }
-
-// MARK: - UICollectionViewDataSource
-    
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if pin.photos?.count == 0 {
-            if FlickrURLs.count == 0 {
+            self.collectionView.reloadData()
+            if self.FlickrURLs.count == 0 {
                 // If there are no photos at location then display message on collection view background
                 let messageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.collectionView.frame.width, height: self.collectionView.frame.height))
                 messageLabel.text = "NO PHOTOS FOUND AT THIS LOCATION"
@@ -131,23 +122,30 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                 messageLabel.textAlignment = .center;
                 messageLabel.font = UIFont(name: "TrebuchetMS", size: 15)
                 messageLabel.sizeToFit()
-                
                 self.collectionView.backgroundView = messageLabel;
-            } else {
-                self.collectionView.backgroundView = nil
             }
+
+        }
+    }
+
+// MARK: - UICollectionViewDataSource
+    
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if FlickrURLs.count > 0 {
             return FlickrURLs.count
-        } else {
+        } else if fetchedResultsController.sections?[section].numberOfObjects ?? 21 > 0 {
             return fetchedResultsController.sections?[section].numberOfObjects ?? 21
+        } else {
+            return 0
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoAlbumCell", for: indexPath) as! PhotoAlbumCell
 
-        if pin.photos?.count == 0 {
-            // if there are no photos associated with this pin, download new images from FlickrURLS array
-            print("Flickr URL array count: \(self.FlickrURLs.count)")
+        if FlickrURLs.count > 0 {
+            // if DownloadFlickrImages has been called, download new images from FlickrURLS array
 
             self.newCollectionButton.isEnabled = false
             cell.imageView.image = UIImage(named: "Placeholder")
@@ -155,19 +153,20 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             
             // Download image from the url
             DispatchQueue.global(qos: .background).async {
+//                print("Flickr URL array count: \(self.FlickrURLs.count)")
                 let URLString = self.FlickrURLs[indexPath.row]
-                print(URLString)
-                
+//                print(URLString)
+
                 let imageURL = URL(string: URLString)
                 let task = URLSession.shared.downloadTask(with: imageURL!, completionHandler: { (url, response, error) in
                     guard let url = url else {
                         print("URL is nil")
                         return
                     }
-                    
+
                     // Persist image data to Core Data
                     let imageData = try! Data(contentsOf: url)
-                    
+
                     let photo = Photo(context: self.dataController.viewContext)
                     photo.image = imageData
                     photo.dateAdded = Date()
@@ -204,9 +203,15 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let photoToDelete = fetchedResultsController.object(at: indexPath)
-        dataController.viewContext.delete(photoToDelete)
-        try? dataController.viewContext.save()
+        if FlickrURLs.count > 0 {
+            FlickrURLs.remove(at: indexPath.row)
+            collectionView.reloadData()
+        } else {
+            let photoToDelete = fetchedResultsController.object(at: indexPath)
+            dataController.viewContext.delete(photoToDelete)
+            try? dataController.viewContext.save()
+            collectionView.reloadData()
+        }
     }
 
     
@@ -217,22 +222,18 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                 dataController.viewContext.delete(photo)
             }
         }
-//        fetchedResultsController = nil
-//        setupFetchedResultsController()
-        
         downloadPhotosFromFlickr()
-//        self.collectionView.reloadData()
     }
     
     
-    deinit {
-        // Cancel all block operations when VC deallocates
-        for operation: BlockOperation in blockOperations {
-            operation.cancel()
-        }
-        
-        blockOperations.removeAll(keepingCapacity: false)
-    }
+//    deinit {
+//        // Cancel all block operations when VC deallocates
+//        for operation: BlockOperation in blockOperations {
+//            operation.cancel()
+//        }
+//        
+//        blockOperations.removeAll(keepingCapacity: false)
+//    }
 }
 
 
@@ -243,68 +244,68 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     
     // The first two methods tell us when the data the fetched results controller is managing will and did change. This is important to batch update the user interface
     
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        blockOperations.removeAll(keepingCapacity: false)
-    }
-    
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        collectionView!.performBatchUpdates({ () -> Void in
-            for operation: BlockOperation in self.blockOperations {
-                operation.start()
-            }
-        }, completion: { (finished) -> Void in
-            self.blockOperations.removeAll(keepingCapacity: false)
-        })
-    }
+//    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+//        blockOperations.removeAll(keepingCapacity: false)
+//    }
+//    
+//    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+//        collectionView!.performBatchUpdates({ () -> Void in
+//            for operation: BlockOperation in self.blockOperations {
+//                operation.start()
+//            }
+//        }, completion: { (finished) -> Void in
+//            self.blockOperations.removeAll(keepingCapacity: false)
+//        })
+//    }
     
 
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         
-        if type == NSFetchedResultsChangeType.insert {
-//            print("Insert Object: \(newIndexPath)")
-            
-            blockOperations.append(
-                BlockOperation(block: { [weak self] in
-                    if let this = self {
-                        this.collectionView!.insertItems(at: [newIndexPath!])
-                    }
-                })
-            )
-        }
-        else if type == NSFetchedResultsChangeType.update {
-//            print("Update Object: \(indexPath)")
-            
-            blockOperations.append(
-                BlockOperation(block: { [weak self] in
-                    if let this = self {
-                        this.collectionView!.reloadItems(at: [indexPath!])
-                    }
-                })
-            )
-        }
-        else if type == NSFetchedResultsChangeType.move {
-//            print("Move Object: \(indexPath)")
-            
-            blockOperations.append(
-                BlockOperation(block: { [weak self] in
-                    if let this = self {
-                        this.collectionView!.moveItem(at: indexPath!, to: newIndexPath!)
-                    }
-                })
-            )
-        }
-        else if type == NSFetchedResultsChangeType.delete {
-//            print("Delete Object: \(indexPath)")
-            
-            blockOperations.append(
-                BlockOperation(block: { [weak self] in
-                    if let this = self {
-                        this.collectionView!.deleteItems(at: [indexPath!])
-                    }
-                })
-            )
-        }
+//        if type == NSFetchedResultsChangeType.insert {
+////            print("Insert Object: \(newIndexPath)")
+//
+//            blockOperations.append(
+//                BlockOperation(block: { [weak self] in
+//                    if let this = self {
+//                        this.collectionView!.insertItems(at: [newIndexPath!])
+//                    }
+//                })
+//            )
+//        }
+//        else if type == NSFetchedResultsChangeType.update {
+////            print("Update Object: \(indexPath)")
+//
+//            blockOperations.append(
+//                BlockOperation(block: { [weak self] in
+//                    if let this = self {
+//                        this.collectionView!.reloadItems(at: [indexPath!])
+//                    }
+//                })
+//            )
+//        }
+//        else if type == NSFetchedResultsChangeType.move {
+////            print("Move Object: \(indexPath)")
+//
+//            blockOperations.append(
+//                BlockOperation(block: { [weak self] in
+//                    if let this = self {
+//                        this.collectionView!.moveItem(at: indexPath!, to: newIndexPath!)
+//                    }
+//                })
+//            )
+//        }
+//        else if type == NSFetchedResultsChangeType.delete {
+////            print("Delete Object: \(indexPath)")
+//
+//            blockOperations.append(
+//                BlockOperation(block: { [weak self] in
+//                    if let this = self {
+//                        this.collectionView!.deleteItems(at: [indexPath!])
+//                    }
+//                })
+//            )
+//        }
     }
 
 }
