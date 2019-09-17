@@ -81,9 +81,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
 
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-//        collectionView.reloadData()
-    }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
@@ -111,12 +108,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     photo.urlString = URLString
                     photo.dateAdded = Date()
                     try? self.dataController.viewContext.save()
-
                 }
-                print("Download photos from flickr URLS count: \(self.FlickrURLs.count)")
             }
 
-//            self.collectionView.reloadData()
             if self.FlickrURLs.count == 0 {
                 // If there are no photos at location then display message on collection view background
                 let messageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.collectionView.frame.width, height: self.collectionView.frame.height))
@@ -136,13 +130,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-//        if FlickrURLs.count > 0 {
-//            return FlickrURLs.count
-//        } else if fetchedResultsController.sections?[section].numberOfObjects ?? 21 > 0 {
-//            return fetchedResultsController.sections?[section].numberOfObjects ?? 21
-//        } else {
-//            return 0
-//        }
         return fetchedResultsController.sections?[section].numberOfObjects ?? 21
     }
     
@@ -151,7 +138,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         let photo = fetchedResultsController.object(at: indexPath)
         
         if photo.image == nil {
-            // if DownloadFlickrImages has been called, download new images from FlickrURLS array
+            
+            // If the FRC photo has no image data, set placeholder, download photo from URL string on background queue, save image to core data and set image in cell
 
             self.newCollectionButton.isEnabled = false
             cell.imageView.image = UIImage(named: "Placeholder")
@@ -163,7 +151,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     if let imageData = try? Data(contentsOf: url!) {
                         let image = UIImage(data: imageData)
  
-                        
                         DispatchQueue.main.async {
                             let photo = Photo(context: self.dataController.viewContext)
                             photo.image = imageData
@@ -176,48 +163,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     }
                 }
             }
-            
-            
-            
-            // Download image from the url
-//            DispatchQueue.global(qos: .background).async {
-////                print("Flickr URL array count: \(self.FlickrURLs.count)")
-//                let photo = self.fetchedResultsController.object(at: indexPath)
-//                let urlString = photo.urlString
-//                let URLString = self.FlickrURLs[indexPath.row]
-//
-////                print("Core Data url string: \(urlString ?? "No URL String")")
-//                if let urlString = urlString {
-//                    let imageURL = URL(string: urlString)
-//                    print(imageURL as Any)
-//                    let task = URLSession.shared.downloadTask(with: imageURL!, completionHandler: { (url, response, error) in
-//                        guard let url = url else {
-//                            print("URL is nil")
-//                            return
-//                        }
-//
-//                        // Persist image data to Core Data
-//                        let imageData = try! Data(contentsOf: url)
-//
-//                        let photo = Photo(context: self.dataController.viewContext)
-//                        photo.pin = self.pin
-//                        photo.image = imageData
-//                        photo.dateAdded = Date()
-//                        try? self.dataController.viewContext.save()
-//
-//                        DispatchQueue.main.async {
-//                            let image = UIImage(data: imageData)
-//                            cell.imageView.image = image
-//                            cell.activityView.stopAnimating()
-//                            self.newCollectionButton.isEnabled = true
-//                        }
-//                    })
-//                    task.resume()
-//                }
-//            }
-
         } else {
-            // If there are photos on the pin, show previously downloaded photos
+            
+            // If there are photos on the pin, show previously downloaded photos from FRC
             
             let aPhoto = fetchedResultsController.object(at: indexPath)
 
@@ -232,18 +180,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     }
     
     
-    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//        if FlickrURLs.count > 0 {
-//            FlickrURLs.remove(at: indexPath.row)
-//            collectionView.reloadData()
-//        } else {
-//            let photoToDelete = fetchedResultsController.object(at: indexPath)
-//            dataController.viewContext.delete(photoToDelete)
-//            try? dataController.viewContext.save()
-//            collectionView.reloadData()
-//        }
-        
         let photoToDelete = fetchedResultsController.object(at: indexPath)
         dataController.viewContext.delete(photoToDelete)
         try? dataController.viewContext.save()
@@ -251,7 +188,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
 
     
     @IBAction func newCollectionButtonTapped(_ sender: Any) {
-        
         let photos = fetchedResultsController.fetchedObjects
         if let photos = photos {
             for photo in photos {
@@ -261,41 +197,12 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         }
         downloadPhotosFromFlickr()
     }
-    
-    
-//    deinit {
-//        // Cancel all block operations when VC deallocates
-//        for operation: BlockOperation in blockOperations {
-//            operation.cancel()
-//        }
-//        
-//        blockOperations.removeAll(keepingCapacity: false)
-//    }
 }
 
 
 // MARK: Fetched results controller delegate methods
 
 extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
-    
-    
-    // The first two methods tell us when the data the fetched results controller is managing will and did change. This is important to batch update the user interface
-    
-//    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-//        blockOperations.removeAll(keepingCapacity: false)
-//    }
-//    
-//    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-//        collectionView!.performBatchUpdates({ () -> Void in
-//            for operation: BlockOperation in self.blockOperations {
-//                operation.start()
-//            }
-//        }, completion: { (finished) -> Void in
-//            self.blockOperations.removeAll(keepingCapacity: false)
-//        })
-//    }
-    
-
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         switch type {
