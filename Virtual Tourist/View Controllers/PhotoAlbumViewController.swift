@@ -22,10 +22,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     var dataController: DataController!
     var fetchedResultsController: NSFetchedResultsController<Photo>!
     var pin: Pin!
-    var latitude = 0.0
-    var longitude = 0.0
     var FlickrURLs: [String] = []
-    var photosToDisplay: Bool!
+
     
     fileprivate func setupFetchedResultsController() {
         
@@ -95,9 +93,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             let photosResponse = FlickrClient.Auth.photoResponse
 
             if let photos = photosResponse {
-                if photos.count == 0 {
-                    self.photosToDisplay = false
-                }
                 for photos in photos {
                     
                     // Convert downloaded photo data into url string
@@ -107,12 +102,14 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     photo.pin = self.pin
                     photo.urlString = URLString
                     photo.dateAdded = Date()
+                    
                     try? self.dataController.viewContext.save()
                 }
             }
             
             if self.FlickrURLs.count == 0 {
                 // If there are no photos at location then display message on collection view background
+                
                 let messageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.collectionView.frame.width, height: self.collectionView.frame.height))
                 messageLabel.text = "NO PHOTOS FOUND AT THIS LOCATION"
                 messageLabel.textColor = .black
@@ -122,6 +119,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                 messageLabel.sizeToFit()
                 self.collectionView.backgroundView = messageLabel;
             }
+        } else {
+            showErrorAlert(title: "Download Error", error: "An error was encountered whilst downloading photos from Flickr, please try again.")
         }
     }
 

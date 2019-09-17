@@ -97,7 +97,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     }
     
     
-    // Persist map view region and zoom level in user defaults
+    //MARK: - Persist map view region and zoom level in user defaults
     
     func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
         let lat = mapView.centerCoordinate.latitude
@@ -111,15 +111,13 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         UserDefaults.standard.set(lonDelta, forKey: lonDeltaKey)
     }
     
+    
+    //MARK: - Map annoation and pin selection methods
+    
     @objc func addAnnotationOnLongPress(gesture: UILongPressGestureRecognizer) {
         if gesture.state == .began {
             let point = gesture.location(in: mapView)
             let coordinate = mapView.convert(point, toCoordinateFrom: mapView)
-            print("New pin dropped \(coordinate)")
-            
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = coordinate
-            mapView.addAnnotation(annotation)
             
             // Persist annotation to core data
             let pin = Pin(context: dataController.viewContext)
@@ -159,21 +157,9 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Pass data to photo album vc
         if let vc = segue.destination as? PhotoAlbumViewController {
-            vc.longitude = tappedPin.coordinate.longitude
-            vc.latitude = tappedPin.coordinate.latitude
             vc.dataController = dataController
             vc.pin = selectedPin
         }
-    }
-    
-    
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        // code to center user on map pin
-        let location = locations.last
-        print("Location change \(location as Any)")
-        let center = CLLocationCoordinate2D(latitude: location!.coordinate.latitude, longitude: (location?.coordinate.longitude)!)
-        let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)) //zoom on map
-        self.mapView.setRegion(region, animated: true)
     }
     
 
@@ -183,18 +169,19 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         super.setEditing(editing, animated: animated)
         deleting = !deleting
         if editing {
-            UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveEaseOut, animations: {
+            UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseOut, animations: {
                 self.view.frame.origin.y -= self.deletePinsView.frame.height
             })
             longPressGesture.isEnabled = false
         } else {
-            UIView.animate(withDuration: 1.0) {
+            UIView.animate(withDuration: 0.5) {
                 self.view.frame.origin.y += self.deletePinsView.frame.height
             }
             longPressGesture.isEnabled = true
         }
     }
 }
+
 
 extension TravelLocationsMapViewController: NSFetchedResultsControllerDelegate {
     
