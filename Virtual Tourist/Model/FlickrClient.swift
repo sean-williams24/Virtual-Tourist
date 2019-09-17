@@ -14,10 +14,11 @@ class FlickrClient {
     struct Auth {
         static var APIKey = "6fc73c69adc5c8d33679b0b1d91fcd55"
         static var flickrPages = 1
+        static var photoResponse: [PhotoStruct]!
     }
     
     
-    class func getPhotosForLocation(lat: Double, lon: Double, completion: @escaping (FlickrResponse?, Error?) -> Void) {
+    class func taskForGettingPhotosForLocation(lat: Double, lon: Double, completion: @escaping (FlickrResponse?, Error?) -> Void) {
         if Auth.flickrPages == 0 {
             Auth.flickrPages = 1
         }
@@ -33,7 +34,7 @@ class FlickrClient {
             do {
                 let response = try decoder.decode(FlickrResponse.self, from: data)
                 Auth.flickrPages = response.photos.pages
-                print(Auth.flickrPages)
+                Auth.photoResponse = response.photos.photo
                 DispatchQueue.main.async {
                     completion(response, error)
                 }
@@ -45,25 +46,13 @@ class FlickrClient {
         task.resume()
     }
     
-    
-//    class func getStudentLocations(completion: @escaping ([StudentLocation], Error?) -> Void) {
-//        let request = URLRequest(url: Endpoints.getStudentLocation.url)
-//        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
-//            guard let data = data  else {
-//                completion([], error)
-//                return
-//            }
-//            let decoder = JSONDecoder()
-//            do {
-//                let responseDict = try decoder.decode([String:[StudentLocation]].self, from: data)
-//                let responseObject = responseDict.values.map({$0})
-//                let flattened = Array(responseObject.joined())
-//                completion(flattened, nil)
-//            } catch {
-//                completion([], error)
-//                print(error)
-//            }
-//        }
-//        task.resume()
-//    }
+    class func getPhotosForLocation(lat: Double, lon: Double, completion: @escaping (Bool, Error?) -> Void) {
+        taskForGettingPhotosForLocation(lat: lat, lon: lon) { (response, error) in
+            if let _ = response {
+                completion(true, nil)
+            } else {
+                completion(false, error)
+            }
+        }
+    }
 }

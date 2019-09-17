@@ -24,7 +24,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     var pin: Pin!
     var latitude = 0.0
     var longitude = 0.0
-    var blockOperations: [BlockOperation] = []
     var FlickrURLs: [String] = []
     var photosToDisplay: Bool!
     
@@ -78,7 +77,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupFetchedResultsController()
-
     }
     
     
@@ -89,11 +87,13 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     
     fileprivate func downloadPhotosFromFlickr() {
-        FlickrClient.getPhotosForLocation(lat: pin.coordinate.latitude, lon: pin.coordinate.longitude) { (response, error) in
-            let photosResponse = response?.photos.photo
-            
-            self.FlickrURLs = []
-            
+        FlickrClient.getPhotosForLocation(lat: pin.coordinate.latitude, lon: pin.coordinate.longitude, completion: handleGetPhotosResponse(success:error:))
+    }
+    
+    func handleGetPhotosResponse(success: Bool, error: Error?) {
+        if success {
+            let photosResponse = FlickrClient.Auth.photoResponse
+
             if let photos = photosResponse {
                 if photos.count == 0 {
                     self.photosToDisplay = false
@@ -110,7 +110,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     try? self.dataController.viewContext.save()
                 }
             }
-
+            
             if self.FlickrURLs.count == 0 {
                 // If there are no photos at location then display message on collection view background
                 let messageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.collectionView.frame.width, height: self.collectionView.frame.height))
@@ -122,10 +122,10 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                 messageLabel.sizeToFit()
                 self.collectionView.backgroundView = messageLabel;
             }
-
         }
     }
 
+    
 // MARK: - UICollectionViewDataSource
     
     
