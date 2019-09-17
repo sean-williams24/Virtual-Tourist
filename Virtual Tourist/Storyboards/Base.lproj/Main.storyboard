@@ -59,6 +59,7 @@
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <nil key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="deletePinsView" destination="0Ck-kW-g2A" id="ypa-Gf-T85"/>
                         <outlet property="editButton" destination="JWw-us-w6T" id="scd-kQ-opL"/>
@@ -85,7 +86,7 @@
                                 </constraints>
                             </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="8qx-Qo-xQQ">
-                                <rect key="frame" x="0.0" y="232" width="414" height="581"/>
+                                <rect key="frame" x="0.0" y="232" width="414" height="630"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="8CN-78-PQM">
                                     <size key="itemSize" width="135" height="135"/>
@@ -150,7 +151,6 @@
                         </barButtonItem>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="6Co-kw-ZIs"/>
                     </toolbarItems>
-                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics" barStyle="black"/>
                     <connections>
                         <outlet property="collectionView" destination="8qx-Qo-xQQ" id="Ozw-2i-b5u"/>
                         <outlet property="flowLayout" destination="8CN-78-PQM" id="rtP-sd-TqA"/>

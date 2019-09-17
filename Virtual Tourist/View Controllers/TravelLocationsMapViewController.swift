@@ -59,6 +59,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationController?.isToolbarHidden = true
         
         // Retrieve userDefault value for map region and zoom level and return view to previous state
         
@@ -83,6 +84,11 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(addAnnotationOnLongPress(gesture:)))
         longPressGesture.minimumPressDuration = 1
         self.mapView.addGestureRecognizer(longPressGesture)
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        navigationController?.setToolbarHidden(true, animated: true)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -110,7 +116,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         UserDefaults.standard.set(latDelta, forKey: latDeltaKey)
         UserDefaults.standard.set(lonDelta, forKey: lonDeltaKey)
     }
-    
+
     
     //MARK: - Map annoation and pin selection methods
     
@@ -153,6 +159,21 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         }
     }
     
+    
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        let reuseId = "pin"
+        var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId) as? MKPinAnnotationView
+        
+        if pinView == nil {
+            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
+            pinView!.pinTintColor = .red
+        }
+        else {
+            pinView!.annotation = annotation
+        }
+        return pinView
+    }
+
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Pass data to photo album vc

@@ -214,8 +214,6 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
         default:
             break
         }
-
     }
-
 }
 

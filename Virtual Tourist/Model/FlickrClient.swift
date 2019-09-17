@@ -24,7 +24,7 @@ class FlickrClient {
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
             guard let data = data else {
                 completion(nil, error)
-                print("Error downloading data from Flickr: \(error?.localizedDescription)")
+                print("Error downloading data from Flickr: \(error!)")
                 return
             }
             let decoder = JSONDecoder()
