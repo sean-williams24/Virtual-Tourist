@@ -151,7 +151,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                         let image = UIImage(data: imageData)
  
                         DispatchQueue.main.async {
-                            let photo = Photo(context: self.dataController.viewContext)
                             photo.image = imageData
                             try? self.dataController.viewContext.save()
                             

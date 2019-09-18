@@ -82,7 +82,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         loadAnnotations()
         
         longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(addAnnotationOnLongPress(gesture:)))
-        longPressGesture.minimumPressDuration = 1
         self.mapView.addGestureRecognizer(longPressGesture)
     }
     
@@ -121,16 +120,20 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
     //MARK: - Map annoation and pin selection methods
     
     @objc func addAnnotationOnLongPress(gesture: UILongPressGestureRecognizer) {
+        
+        var coordinate = CLLocationCoordinate2D()
+        let point = gesture.location(in: mapView)
+        coordinate = mapView.convert(point, toCoordinateFrom: mapView)
+        
+        let pin = Pin(context: dataController.viewContext)
         if gesture.state == .began {
-            let point = gesture.location(in: mapView)
-            let coordinate = mapView.convert(point, toCoordinateFrom: mapView)
             
-            // Persist annotation to core data
-            let pin = Pin(context: dataController.viewContext)
             pin.latitude = coordinate.latitude
             pin.longitude = coordinate.longitude
             pin.creationDate = Date()
+            
             try? dataController.viewContext.save()
+
         }
     }
     
@@ -167,6 +170,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, CLL
         if pinView == nil {
             pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
             pinView!.pinTintColor = .red
+            pinView?.animatesDrop = true
         }
         else {
             pinView!.annotation = annotation

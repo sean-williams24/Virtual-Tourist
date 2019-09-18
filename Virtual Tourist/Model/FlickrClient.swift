@@ -11,33 +11,26 @@ import UIKit
 
 class FlickrClient {
     
-    struct Auth {
-        static var APIKey = "6fc73c69adc5c8d33679b0b1d91fcd55"
-        static var flickrPages = 1
-        static var photoResponse: [PhotoStruct]!
-    }
-    
-    
     class func taskForGettingPhotosForLocation(url: String, completion: @escaping (FlickrResponse?, Error?) -> Void) {
  
         let request = URLRequest(url: URL(string: url)!)
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
             guard let data = data else {
                 completion(nil, error)
-                print("Error downloading data from Flickr: \(error!)")
+                debugPrint("Error downloading data from Flickr: \(error!)")
                 return
             }
             let decoder = JSONDecoder()
             do {
                 let response = try decoder.decode(FlickrResponse.self, from: data)
-                Auth.flickrPages = response.photos.pages
+                Auth.flickrPages = min(response.photos.pages, 4000/21)
                 Auth.photoResponse = response.photos.photo
                 DispatchQueue.main.async {
                     completion(response, error)
                 }
             } catch {
                 completion(nil, error)
-                print("Decoding error: \(error)")
+                debugPrint("Decoding error: \(error)")
             }
         }
         task.resume()
